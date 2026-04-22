@@ -37,10 +37,19 @@ class CharactersRepositoryImpl @Inject constructor(
     }
     
     suspend fun fetchFromNetwork() {
-        val response = apiService.getCharacters()
-        response.results.forEachIndexed { index, dto ->
-            val id = index + 1
-            characterDao.addCharacter(mapper.dtoToDbModel(dto, id))
+        var page = 1
+        var hasMore = true
+        
+        while (hasMore) {
+            val response = apiService.getCharacters(page)
+            response.results.forEach { dto ->
+                val id = dto.url.trimEnd('/').substringAfterLast('/').toIntOrNull() ?: 0
+                if (id > 0) {
+                    characterDao.addCharacter(mapper.dtoToDbModel(dto, id))
+                }
+            }
+            hasMore = response.next != null
+            if (hasMore) page++
         }
     }
 }

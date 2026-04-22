@@ -24,8 +24,6 @@ data class CharactersResponseItemDto(
     val height: String = "",
     @SerialName("homeworld")
     val homeworld: String = "",
-    @SerialName("id")
-    val id: String = "",
     @SerialName("mass")
     val mass: String = "",
     @SerialName("name")
