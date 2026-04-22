@@ -17,7 +17,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://swapi.mimo.dev/")
+            .baseUrl("https://swapi.dev/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

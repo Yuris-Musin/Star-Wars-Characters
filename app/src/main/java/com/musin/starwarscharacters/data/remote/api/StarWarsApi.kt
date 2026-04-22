@@ -8,12 +8,12 @@ import retrofit2.http.Query
 
 interface StarWarsApi {
 
-    @GET("swapi/people/")
+    @GET("api/people/")
     suspend fun getCharacters(
         @Query("page") page: Int = 1
     ): CharactersResponseDto
 
-    @GET("swapi/people/{id}/")
+    @GET("api/people/{id}/")
     suspend fun getCharacterById(
         @Path("id") id: String
     ): CharactersResponseItemDto
