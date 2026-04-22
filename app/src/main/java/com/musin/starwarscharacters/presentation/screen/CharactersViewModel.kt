@@ -34,7 +34,7 @@ class CharactersViewModel @Inject constructor(
                     _state.value = CharactersState.Success(cachedCharacters)
                 } else {
                     // No cache, fetch from network
-                    repository.fetchFromNetwork()
+//                    repository.fetchFromNetwork()
                     val updatedCharacters = repository.getAllCharacters().first()
                     if (updatedCharacters.isEmpty()) {
                         _state.value = CharactersState.Empty
