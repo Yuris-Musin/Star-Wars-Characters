@@ -2,18 +2,19 @@ package com.musin.starwarscharacters.presentation.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.musin.starwarscharacters.data.repository.CharactersRepositoryImpl
+import com.musin.starwarscharacters.domain.repository.CharactersRepository
 import com.musin.starwarscharacters.domain.entity.Character
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class CharactersViewModel @Inject constructor(
-    private val repository: CharactersRepositoryImpl
+    private val repository: CharactersRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<CharactersState>(CharactersState.Loading)
@@ -28,19 +29,17 @@ class CharactersViewModel @Inject constructor(
             _state.value = CharactersState.Loading
             try {
                 // First, check if we have cached data
-                repository.getAllCharacters().collect { characters ->
-                    if (characters.isNotEmpty()) {
-                        _state.value = CharactersState.Success(characters)
+                val cachedCharacters = repository.getAllCharacters().first()
+                if (cachedCharacters.isNotEmpty()) {
+                    _state.value = CharactersState.Success(cachedCharacters)
+                } else {
+                    // No cache, fetch from network
+                    repository.fetchFromNetwork()
+                    val updatedCharacters = repository.getAllCharacters().first()
+                    if (updatedCharacters.isEmpty()) {
+                        _state.value = CharactersState.Empty
                     } else {
-                        // No cache, fetch from network
-                        repository.fetchFromNetwork()
-                        repository.getAllCharacters().collect { updatedCharacters ->
-                            if (updatedCharacters.isEmpty()) {
-                                _state.value = CharactersState.Empty
-                            } else {
-                                _state.value = CharactersState.Success(updatedCharacters)
-                            }
-                        }
+                        _state.value = CharactersState.Success(updatedCharacters)
                     }
                 }
             } catch (e: Exception) {
