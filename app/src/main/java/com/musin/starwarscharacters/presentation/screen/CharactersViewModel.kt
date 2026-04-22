@@ -2,7 +2,7 @@ package com.musin.starwarscharacters.presentation.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.musin.starwarscharacters.domain.repository.CharactersRepository
+import com.musin.starwarscharacters.data.repository.CharactersRepositoryImpl
 import com.musin.starwarscharacters.domain.entity.Character
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CharactersViewModel @Inject constructor(
-    private val repository: CharactersRepository
+    private val repository: CharactersRepositoryImpl
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<CharactersState>(CharactersState.Loading)
@@ -34,7 +34,7 @@ class CharactersViewModel @Inject constructor(
                     _state.value = CharactersState.Success(cachedCharacters)
                 } else {
                     // No cache, fetch from network
-//                    repository.fetchFromNetwork()
+                    repository.fetchFromNetwork()
                     val updatedCharacters = repository.getAllCharacters().first()
                     if (updatedCharacters.isEmpty()) {
                         _state.value = CharactersState.Empty
