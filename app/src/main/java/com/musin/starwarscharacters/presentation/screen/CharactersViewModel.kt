@@ -2,7 +2,7 @@ package com.musin.starwarscharacters.presentation.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.musin.starwarscharacters.domain.usecase.GetAllCharactersUseCase
+import com.musin.starwarscharacters.data.repository.CharactersRepositoryImpl
 import com.musin.starwarscharacters.domain.entity.Character
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class CharactersViewModel @Inject constructor(
-    private val getAllCharactersUseCase: GetAllCharactersUseCase
+    private val repository: CharactersRepositoryImpl
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<CharactersState>(CharactersState.Loading)
@@ -27,19 +27,36 @@ class CharactersViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = CharactersState.Loading
             try {
-                getAllCharactersUseCase()
-                    .collect { characters ->
+                // First, check if we have cached data
+                repository.getAllCharacters().collect { characters ->
+                    if (characters.isNotEmpty()) {
                         _state.value = CharactersState.Success(characters)
+                    } else {
+                        // No cache, fetch from network
+                        repository.fetchFromNetwork()
+                        repository.getAllCharacters().collect { updatedCharacters ->
+                            if (updatedCharacters.isEmpty()) {
+                                _state.value = CharactersState.Empty
+                            } else {
+                                _state.value = CharactersState.Success(updatedCharacters)
+                            }
+                        }
                     }
+                }
             } catch (e: Exception) {
                 _state.value = CharactersState.Error(e.message ?: "Unknown error")
             }
         }
     }
+    
+    fun retry() {
+        loadCharacters()
+    }
 }
 
 sealed class CharactersState {
     object Loading : CharactersState()
+    object Empty : CharactersState()
     data class Success(val characters: List<Character>) : CharactersState()
     data class Error(val message: String) : CharactersState()
 }
