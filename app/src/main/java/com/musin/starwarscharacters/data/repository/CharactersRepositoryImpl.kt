@@ -6,6 +6,7 @@ import com.musin.starwarscharacters.data.remote.api.StarWarsApi
 import com.musin.starwarscharacters.domain.entity.Character
 import com.musin.starwarscharacters.domain.repository.CharactersRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -23,7 +24,7 @@ class CharactersRepositoryImpl @Inject constructor(
     
     override suspend fun getCharacterById(id: Int): Character {
         // Try to get from cache first
-        val cached = characterDao.getAllCharacters().value.find { it.id == id }
+        val cached = characterDao.getCharacterById(id)
         if (cached != null) {
             return mapper.dbModelToDomain(cached)
         }

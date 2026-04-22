@@ -13,6 +13,9 @@ interface CharacterDao {
     @Query("SELECT * FROM characters")
     fun getAllCharacters(): Flow<List<CharacterDbModel>>
 
+    @Query("SELECT * FROM characters WHERE id = :id LIMIT 1")
+    suspend fun getCharacterById(id: Int): CharacterDbModel?
+
     @Insert(onConflict = IGNORE)
     fun addCharacter(characterDbModel: CharacterDbModel)
 
